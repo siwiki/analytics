@@ -281,7 +281,7 @@ async function insertEntries(db, entries) {
         e.bot,
         e.browser,
         e.deviceType,
-        e.ok,
+        e.os,
         e.country
     ])]);
     await pool.end();
