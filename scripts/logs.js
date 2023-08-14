@@ -313,9 +313,10 @@ async function main() {
         // Report success.
         await report(webhook, `${entries.length} entries successfully transferred.`);
     } catch (error) {
-        // Report error.
+        // Report error and exit.
         await report(webhook, `Log transfer failed: ${error.message}`);
         console.error('Full error:', error);
+        process.exit(1);
     }
     webhook.destroy();
 }
