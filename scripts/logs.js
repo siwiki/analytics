@@ -39,6 +39,7 @@ INSERT INTO logs (host, user, time, method, path, query, status, response_size,
 process_time, referer, user_agent, is_bot, browser, device_type, os, country)
 VALUES ?
 `;
+const CHUNK_SIZE = 20000;
 
 async function loadConfig() {
     return JSON.parse(await readFile('config.json', {
@@ -266,24 +267,27 @@ async function reportFailedEntries(webhook, entries) {
 
 async function insertEntries(db, entries) {
     const pool = createPool(db);
-    await pool.query(QUERY, [entries.map(e => [
-        e.host,
-        e.user,
-        e.time,
-        e.method,
-        e.path,
-        e.query,
-        e.status,
-        e.responseSize,
-        e.processTime,
-        e.referer,
-        e.userAgent,
-        e.bot,
-        e.browser,
-        e.deviceType,
-        e.os,
-        e.country
-    ])]);
+    for (let start = 0; start < entries.length; start += CHUNK_SIZE) {
+        const batch = entries.slice(start, start + CHUNK_SIZE);
+        await pool.query(QUERY, [batch.map(e => [
+            e.host,
+            e.user,
+            e.time,
+            e.method,
+            e.path,
+            e.query,
+            e.status,
+            e.responseSize,
+            e.processTime,
+            e.referer,
+            e.userAgent,
+            e.bot,
+            e.browser,
+            e.deviceType,
+            e.os,
+            e.country
+        ])]);
+    }
     await pool.end();
 }
 
